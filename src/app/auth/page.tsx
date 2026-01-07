@@ -1,27 +1,24 @@
 "use client";
 
 import { Button } from "@/src/components/ui/button";
-import { useSignIn, useUser } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs/legacy";
 import { useSearchParams } from "next/navigation";
 
 export default function AuthPage() {
+  const clerk = useClerk();
   const { signIn } = useSignIn();
-  const { isLoaded } = useUser();
+
+  const isLoaded = clerk.loaded;
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect_url");
-  const redirectURL = redirectParam ? new URL(redirectParam) : null;
-  const finalRedirect = redirectURL ? redirectURL.searchParams.get("redirect_uri") : null;
-
-  console.log("redirectURL:", redirectURL);
-  console.log("finalRedirect:", finalRedirect);
 
   const handleSignIn = async () => {
     signIn?.authenticateWithRedirect({
       strategy: "oauth_google",
       redirectUrl: "/auth/sso-callback",
-      redirectUrlComplete: finalRedirect || "/",
+      redirectUrlComplete: redirectParam || "/",
     });
-  };
 
   if (!signIn || !isLoaded) return null;
 
